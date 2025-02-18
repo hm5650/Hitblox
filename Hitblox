@@ -34,7 +34,6 @@ lib:SetIcon("http://www.roblox.com/asset/?id=9178187770")
 -- Play another sound
 playSound("rbxassetid://195868961")
 
-
 -- Hitbox settings
 local HitboxSize = 20
 local HitboxTransparency = 0.89
@@ -49,7 +48,7 @@ end
 
 -- Function to modify hitboxes without removing legs
 local function modifyHitboxes(character)
-    if character then
+    if character and character ~= localPlayer.Character then
         local head = character:FindFirstChild("Head")
         local hrp = character:FindFirstChild("HumanoidRootPart")
 
