@@ -1,305 +1,347 @@
-local a = game:GetService("StarterGui")
-local b = game:GetService("Players")
-local c = game:GetService("RunService")
-local d = game:GetService("Lighting")
-local e = b.LocalPlayer
+local StarterGui = game:GetService("StarterGui")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+local localPlayer = Players.LocalPlayer
 
-local function f(g)
-    local h = Instance.new("Sound")
-    h.SoundId = g
-    h.Parent = workspace
-    h:Play()
-    h.Ended:Connect(function()
-        h:Destroy()
+-- Function to play and destroy sounds
+local function playSound(soundId)
+    local sound = Instance.new("Sound")
+    sound.SoundId = soundId
+    sound.Parent = workspace
+    sound:Play()
+    sound.Ended:Connect(function()
+        sound:Destroy()
     end)
 end
 
-a:SetCore("SendNotification", {
+-- Initial notification
+StarterGui:SetCore("SendNotification", {
     Title = "Loading",
     Text = "loadstring(''Made by hmmm5650'')()",
     Duration = 5
 })
 task.wait(4)
 
-f("rbxassetid://5607311932")
+-- Play initial sound
+playSound("rbxassetid://5607311932")
 
-local i = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/Arceus-X-UI-Library/main/source.lua"))()
-i:SetTitle("Hitblox")
-i:SetIcon("http://www.roblox.com/asset/?id=9178187770")
+-- Load UI library
+local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/Arceus-X-UI-Library/main/source.lua"))()
+lib:SetTitle("Hitblox")
+lib:SetIcon("http://www.roblox.com/asset/?id=9178187770")
 
-f("rbxassetid://195868961")
+-- Play another sound
+playSound("rbxassetid://195868961")
 
-local j = 20
-local k = 0.89
-local l = false
-local m = false
-local n = {}
 
-local function o(p)
-    return p ~= e and (p.Team ~= e.Team or p.Team == nil)
+-- Hitbox settings
+local HitboxSize = 20
+local HitboxTransparency = 0.89
+local IsHitboxEnabled = false
+local IsESPEnabled = false
+local ESPTexts = {}
+
+-- Function to check if a player is an enemy
+local function isEnemy(player)
+    return player ~= localPlayer and (player.Team ~= localPlayer.Team or player.Team == nil)
 end
 
-local function q(r)
-    if r then
-        local s = r:FindFirstChild("Head")
-        local t = r:FindFirstChild("HumanoidRootPart")
+-- Function to modify hitboxes without removing legs
+local function modifyHitboxes(character)
+    if character then
+        local head = character:FindFirstChild("Head")
+        local hrp = character:FindFirstChild("HumanoidRootPart")
 
-        if t then
-            t.Size = Vector3.new(j, j, j)
-            t.Transparency = k
-            t.BrickColor = BrickColor.new("Dark red")
-            t.Material = Enum.Material.Neon
-            t.CanCollide = false
+        if hrp then
+            hrp.Size = Vector3.new(HitboxSize, HitboxSize, HitboxSize)
+            hrp.Transparency = HitboxTransparency
+            hrp.BrickColor = BrickColor.new("Dark red")
+            hrp.Material = Enum.Material.Neon
+            hrp.CanCollide = false
         end
 
-        if s then
-            s.Size = Vector3.new(j, j, j)
-            s.Transparency = k
-            s.BrickColor = BrickColor.new("Bright red")
-            s.Material = Enum.Material.Neon
-            s.CanCollide = false
-            s.Massless = true
+        if head then
+            head.Size = Vector3.new(HitboxSize, HitboxSize, HitboxSize)
+            head.Transparency = HitboxTransparency
+            head.BrickColor = BrickColor.new("Bright red")
+            head.Material = Enum.Material.Neon
+            head.CanCollide = false
+            head.Massless = true
         end
     end
 end
 
-local function u(r)
-    if r then
-        local s = r:FindFirstChild("Head")
-        local t = r:FindFirstChild("HumanoidRootPart")
+-- Function to reset hitboxes
+local function resetHitboxes(character)
+    if character then
+        local head = character:FindFirstChild("Head")
+        local hrp = character:FindFirstChild("HumanoidRootPart")
 
-        if t then
-            t.Size = Vector3.new(2, 2, 1)
-            t.Transparency = 1
-            t.BrickColor = BrickColor.new("Medium stone grey")
-            t.Material = Enum.Material.Plastic
-            t.CanCollide = true
+        if hrp then
+            hrp.Size = Vector3.new(2, 2, 1)
+            hrp.Transparency = 1
+            hrp.BrickColor = BrickColor.new("Medium stone grey")
+            hrp.Material = Enum.Material.Plastic
+            hrp.CanCollide = true
         end
 
-        if s then
-            s.Size = Vector3.new(2, 1, 1)
-            s.Transparency = 1
-            s.BrickColor = BrickColor.new("Medium stone grey")
-            s.Material = Enum.Material.Plastic
-            s.CanCollide = true
-            s.Massless = false
+        if head then
+            head.Size = Vector3.new(2, 1, 1)
+            head.Transparency = 1
+            head.BrickColor = BrickColor.new("Medium stone grey")
+            head.Material = Enum.Material.Plastic
+            head.CanCollide = true
+            head.Massless = false
         end
     end
 end
 
-local function v(r)
-    if r then
-        for _, w in ipairs(r:GetChildren()) do
-            if w:IsA("BasePart") then
-                w.Size = Vector3.new(1, 1, 1)
-                w.Transparency = 0.8
-                w.BrickColor = BrickColor.new("Dark grey")
-                w.Material = Enum.Material.SmoothPlastic
-                w.CanCollide = false
-                w.Anchored = false
-                w.Velocity = Vector3.new(0, -50, 0)
+-- Function to make corpses fall through the ground
+local function shrinkHitbox(character)
+    if character then
+        for _, part in ipairs(character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.Size = Vector3.new(1, 1, 1)  -- Shrink parts
+                part.Transparency = 0.8  -- Make it more transparent
+                part.BrickColor = BrickColor.new("Dark grey")
+                part.Material = Enum.Material.SmoothPlastic
+                part.CanCollide = false -- Make sure it falls through the ground
+                part.Anchored = false -- Ensure it's not stuck
+                part.Velocity = Vector3.new(0, -50, 0) -- Force it downward
             end
         end
     end
 end
 
-local function x()
-    for _, p in ipairs(b:GetPlayers()) do
-        if o(p) and p.Character then
-            q(p.Character)
+-- Function to continuously apply hitboxes (only for enemies)
+local function applyHitboxes()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if isEnemy(player) and player.Character then
+            modifyHitboxes(player.Character) -- Apply hitbox only for enemy players
         end
     end
 end
 
-local function y()
-    for _, p in ipairs(b:GetPlayers()) do
-        if p.Character then
-            u(p.Character)
+-- Function to reset hitboxes for all players
+local function deleteHitboxes()
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player.Character then
+            resetHitboxes(player.Character) -- Reset hitboxes for all players
         end
     end
 end
 
-local z = false
-local A
+-- Flag to control the loop for expanding hitboxes
+local isExpandingHitboxes = false
+local hitboxExpansionCoroutine
 
-local function B(C)
-    l = C
-    f("rbxassetid://195868961")
+-- Function to toggle repeated hitboxes with deletion
+local function toggleRepeatHitboxes(state)
+    IsHitboxEnabled = state
+    playSound("rbxassetid://195868961")
 
-    if l then
-        x()
+    if IsHitboxEnabled then
+        -- Apply hitboxes initially
+        applyHitboxes()
 
-        if not z then
-            z = true
-            A = coroutine.create(function()
-                while z do
-                    task.wait(1)
-                    x()
+        -- Start the loop for repeating hitbox expansion if not already running
+        if not isExpandingHitboxes then
+            isExpandingHitboxes = true
+            hitboxExpansionCoroutine = coroutine.create(function()
+                while isExpandingHitboxes do
+                    task.wait(1)  -- Adjust the time interval here if needed
+                    applyHitboxes()  -- Reapply hitboxes repeatedly
                 end
             end)
-            coroutine.resume(A)
+            coroutine.resume(hitboxExpansionCoroutine)
         end
     else
-        if z then
-            z = false
-            if A then
-                coroutine.close(A)
-                A = nil
+        -- Stop the hitbox expansion loop
+        if isExpandingHitboxes then
+            isExpandingHitboxes = false
+            if hitboxExpansionCoroutine then
+                -- Ensure that the loop stops
+                coroutine.close(hitboxExpansionCoroutine)
+                hitboxExpansionCoroutine = nil
             end
         end
 
-        y()
+        -- Delete hitboxes when disabled
+        deleteHitboxes()
     end
 end
 
-local function D(p)
-    if n[p] then
-        n[p]:Destroy()
-        n[p] = nil
+-- Optimized ESP System with Distance-Based Size
+local function createESP(player)
+    if ESPTexts[player] then
+        ESPTexts[player]:Destroy()  -- Delete previous ESP to avoid duplicates
+        ESPTexts[player] = nil
     end
 
-    if not p.Character then return end
-    local s = p.Character:FindFirstChild("Head")
-    if not s then return end
+    if not player.Character then return end
+    local head = player.Character:FindFirstChild("Head")
+    if not head then return end
 
-    if o(p) then
-        local E = Instance.new("BillboardGui")
-        E.Name = "ESP"
-        E.Adornee = s
-        E.Size = UDim2.new(0, 100, 0, 50)
-        E.StudsOffset = Vector3.new(0, 2, 0)
-        E.AlwaysOnTop = true
+    -- Only apply ESP to enemies
+    if isEnemy(player) then
+        local billboard = Instance.new("BillboardGui")
+        billboard.Name = "ESP"
+        billboard.Adornee = head
+        billboard.Size = UDim2.new(0, 100, 0, 50) -- Default size
+        billboard.StudsOffset = Vector3.new(0, 2, 0)
+        billboard.AlwaysOnTop = true
 
-        local F = Instance.new("TextLabel", E)
-        F.Size = UDim2.new(1, 0, 1, 0)
-        F.BackgroundTransparency = 1
-        F.TextColor3 = Color3.new(1, 0, 0)
-        F.TextStrokeTransparency = 0
-        F.Text = p.Name
-        F.TextScaled = true
-        F.Font = Enum.Font.SourceSansBold
+        local textLabel = Instance.new("TextLabel", billboard)
+        textLabel.Size = UDim2.new(1, 0, 1, 0)
+        textLabel.BackgroundTransparency = 1
+        textLabel.TextColor3 = Color3.new(1, 0, 0) -- Red Color for enemies
+        textLabel.TextStrokeTransparency = 0
+        textLabel.Text = player.Name
+        textLabel.TextScaled = true
+        textLabel.Font = Enum.Font.SourceSansBold
 
-        n[p] = E
-        E.Parent = s
+        ESPTexts[player] = billboard
+        billboard.Parent = head
 
-        local function G()
-            if p.Character and p.Character:FindFirstChild("HumanoidRootPart") and e.Character and e.Character:FindFirstChild("HumanoidRootPart") then
-                local H = (e.Character.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
-                local I = 10
-                local J = 100
-                local K = math.clamp(J - H * 0.5, I, J)
-                E.Size = UDim2.new(0, K, 0, K * 0.5)
+        -- Update ESP size based on distance (Optimized)
+        local function updateESPSize()
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and localPlayer.Character and localPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local distance = (localPlayer.Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
+                local minSize = 10
+                local maxSize = 100
+                local sizeFactor = math.clamp(maxSize - distance * 0.5, minSize, maxSize)
+                billboard.Size = UDim2.new(0, sizeFactor, 0, sizeFactor * 0.5)  -- Update ESP size dynamically
             end
         end
 
-        local L = tick()
-        c.RenderStepped:Connect(function()
-            if tick() - L >= 0.1 then
-                G()
-                L = tick()
+        -- Optimize by limiting updates
+        local lastUpdateTime = tick()
+        RunService.RenderStepped:Connect(function()
+            if tick() - lastUpdateTime >= 0.1 then
+                updateESPSize()
+                lastUpdateTime = tick()
             end
         end)
     end
 end
 
-local function M(C)
-    m = C
-    f("rbxassetid://195868961")
+-- Function to toggle ESP (Only for enemies)
+local function toggleESP(state)
+    IsESPEnabled = state
+    playSound("rbxassetid://195868961")
 
-    if m then
-        for _, p in ipairs(b:GetPlayers()) do
-            if o(p) then
-                D(p)
+    if IsESPEnabled then
+        -- Apply ESP to all players
+        for _, player in ipairs(Players:GetPlayers()) do
+            if isEnemy(player) then
+                createESP(player)
             end
         end
     else
-        for _, N in pairs(n) do
-            N:Destroy()
+        -- Delete all ESP elements
+        for _, gui in pairs(ESPTexts) do
+            gui:Destroy()
         end
-        n = {}
+        ESPTexts = {}
     end
 end
 
-local function O(p)
-    if o(p) then
-        p.CharacterAdded:Connect(function(r)
-            task.wait(1)
-            if m then
-                D(p)
+-- Handle Player and Apply Shrink Effect on Death
+local function handlePlayer(player)
+    if isEnemy(player) then
+        player.CharacterAdded:Connect(function(character)
+            task.wait(1)  -- Wait for the character to fully load
+            -- Reset hitboxes when the player respawns
+            if IsESPEnabled then
+                createESP(player)
             end
-            if l then
-                u(r)
+            if IsHitboxEnabled then
+                resetHitboxes(character) -- Reset hitbox size immediately upon respawn
             end
         end)
 
-        p.CharacterRemoving:Connect(function()
-            if p.Character then
-                v(p.Character)
+        player.CharacterRemoving:Connect(function()
+            -- Shrink hitboxes when the player dies
+            if player.Character then
+                shrinkHitbox(player.Character)  -- Shrink hitbox upon death
             end
         end)
 
-        if p.Character and m then
-            D(p)
+        if player.Character and IsESPEnabled then
+            createESP(player)  -- Create ESP if the player is already in-game
         end
     end
 end
 
-for _, p in ipairs(b:GetPlayers()) do
-    O(p)
+-- Apply to players already in the game
+for _, player in ipairs(Players:GetPlayers()) do
+    handlePlayer(player)
 end
 
-b.PlayerAdded:Connect(O)
-b.PlayerRemoving:Connect(function(p)
-    if n[p] then
-        n[p]:Destroy()
-        n[p] = nil
+-- Connect to player added and removed events
+Players.PlayerAdded:Connect(handlePlayer)
+Players.PlayerRemoving:Connect(function(player)
+    if ESPTexts[player] then
+        ESPTexts[player]:Destroy()  -- Delete ESP when player leaves
+        ESPTexts[player] = nil
     end
 end)
 
-i:AddButton("FBright", function()
-    f("rbxassetid://6228337171")
-    local d = game:GetService("Lighting")
+-- UI Elements
+lib:AddButton("FBright", function()
+    playSound("rbxassetid://6228337171")
+    -- Full Bright Script
 
-    d.Brightness = 2
-    d.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
-    d.Ambient = Color3.fromRGB(255, 255, 255)
-    d.TimeOfDay = "14:00:00"
-    d.FogStart = 0
-    d.FogEnd = 100000
-    d.FogColor = Color3.fromRGB(255, 255, 255)
+local Lighting = game:GetService("Lighting")
 
-    game:GetService("RunService").Heartbeat:Connect(function()
-        d.Brightness = 2
-        d.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
-        d.Ambient = Color3.fromRGB(255, 255, 255)
-        d.TimeOfDay = "14:00:00"
-        d.FogStart = 0
-        d.FogEnd = 100000
-        d.FogColor = Color3.fromRGB(255, 255, 255)
-    end)
+-- Set the properties for full brightness
+Lighting.Brightness = 2
+Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+Lighting.TimeOfDay = "14:00:00" -- midday for full brightness
+Lighting.FogStart = 0
+Lighting.FogEnd = 100000
+Lighting.FogColor = Color3.fromRGB(255, 255, 255)
+
+-- Optionally, you can loop this to maintain full brightness even after events or resets
+game:GetService("RunService").Heartbeat:Connect(function()
+    Lighting.Brightness = 2
+    Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+    Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+    Lighting.TimeOfDay = "14:00:00"
+    Lighting.FogStart = 0
+    Lighting.FogEnd = 100000
+    Lighting.FogColor = Color3.fromRGB(255, 255, 255)
 end)
 
-i:AddButton("AntiLag", function()
-    f("rbxassetid://6228337171")
-    local function P()
-        for _, Q in pairs(workspace:GetDescendants()) do
-            if Q:IsA("Decal") and not Q:IsDescendantOf(game.Players) then
-                Q:Destroy()
-            end
-            if Q:IsA("MeshPart") and not Q:IsDescendantOf(game.Players) then
-                Q:Destroy()
-            end
-            if Q:IsA("SurfaceGui") then
-                Q:Destroy()
-            end
+end)
+
+lib:AddButton("AntiLag", function()
+    playSound("rbxassetid://6228337171")
+    local function removeVisualEffects()
+    for _, obj in pairs(workspace:GetDescendants()) do
+        -- Remove Decals (except from player characters)
+        if obj:IsA("Decal") and not obj:IsDescendantOf(game.Players) then
+            obj:Destroy()
+        end
+        -- Remove MeshParts that are NOT inside characters
+        if obj:IsA("MeshPart") and not obj:IsDescendantOf(game.Players) then
+            obj:Destroy()
+        end
+        -- Remove SurfaceGui (Optional)
+        if obj:IsA("SurfaceGui") then
+            obj:Destroy()
         end
     end
-    task.wait()
-    for R, S in next, (workspace:GetDescendants()) do
-        if S:IsA("Part") then S.Material = Enum.Material.SmoothPlastic end
-    end
-end)
+end
+task.wait()
+for i,v in next, (workspace:GetDescendants()) do
+ if v:IsA("Part") then v.Material = Enum.Material.SmoothPlastic
+ end
+ end
 
+end)
 
 lib:AddToggle("Fov", function(state)
     if state then
@@ -318,31 +360,32 @@ camera.FieldOfView = 79
     end
 end, false)
 
-i:AddToggle("Expand Hitbox", function(C)
-    B(C)
+lib:AddToggle("Expand Hitbox", function(state)
+    toggleRepeatHitboxes(state)  -- Toggle repeated hitboxes
 end, false)
 
-i:AddToggle("ESP", function(C)
-    M(C)
+lib:AddToggle("ESP", function(state)
+    toggleESP(state)  -- Toggle ESP for enemies
 end, false)
 
-i:AddButton("Aimlock", function()
-    f("rbxassetid://6228337171")
-    loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Aimbot-Universal-For-Mobile-and-PC-29153"))()
+lib:AddButton("Aimlock", function()
+    playSound("rbxassetid://6228337171")
+loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Aimbot-Universal-For-Mobile-and-PC-29153"))()
 end)
 
-i:AddButton("BlatantCC", function()
-    f("rbxassetid://6228337171")
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/vxyo/RevNigga/refs/heads/main/FreeForeverBlatantCC"))()
+lib:AddButton("BlatantCC", function()
+    playSound("rbxassetid://6228337171")
+loadstring(game:HttpGet("https://raw.githubusercontent.com/vxyo/RevNigga/refs/heads/main/FreeForeverBlatantCC"))()
 end)
 
-i:AddButton("🍪", function()
-    f("rbxassetid://7115235855")
-    a:SetCore("SendNotification", {
-        Title = "$10",
-        Text = "🍪 yuymyy",
-        Duration = 3
-    })
+lib:AddButton("🍪", function()
+playSound("rbxassetid://7115235855")
+StarterGui:SetCore("SendNotification", {
+Title = "$10",
+Text = "🍪 yuymyy",
+Duration = 3
+})
 end)
 
-i:Show()
+-- Show the UI
+lib:Show()
