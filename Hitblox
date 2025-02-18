@@ -300,15 +300,21 @@ i:AddButton("AntiLag", function()
     end
 end)
 
-i:AddToggle("Fov", function(C)
-    if C then
-        f("rbxassetid://195868961")
-        local T = game.Workspace.CurrentCamera
-        T.FieldOfView = 120
+
+lib:AddToggle("Fov", function(state)
+    if state then
+        playSound("rbxassetid://195868961")
+        local camera = game.Workspace.CurrentCamera
+
+-- Set the camera's FOV to 120
+camera.FieldOfView = 120
+
     else
-      playSound("rbxassetid://195868961")
-    local T = game.Workspace.CurrentCamera
-        T.FieldOfView = 79
+       playSound("rbxassetid://195868961")
+     local camera = game.Workspace.CurrentCamera
+
+-- Set the camera's FOV to 120
+camera.FieldOfView = 79
     end
 end, false)
 
