@@ -42,7 +42,7 @@ local IsHitboxEnabled = false
 local IsESPEnabled = false
 local ESPTexts = {}
 
--- Function to check if a player is an enemy
+-- Function to check if a player is an enemy (exclude local player)
 local function isEnemy(player)
     return player ~= localPlayer and (player.Team ~= localPlayer.Team or player.Team == nil)
 end
@@ -114,7 +114,7 @@ local function shrinkHitbox(character)
     end
 end
 
--- Function to continuously apply hitboxes (only for enemies)
+-- Function to continuously apply hitboxes (only for enemies, not the local player)
 local function applyHitboxes()
     for _, player in ipairs(Players:GetPlayers()) do
         if isEnemy(player) and player.Character then
