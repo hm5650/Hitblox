@@ -48,67 +48,76 @@ end
 
 -- Function to modify hitboxes without removing legs
 local function modifyHitboxes(character)
-    if character and character ~= localPlayer.Character then
-        local head = character:FindFirstChild("Head")
-        local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not character then return end
 
-        if hrp then
-            hrp.Size = Vector3.new(HitboxSize, HitboxSize, HitboxSize)
-            hrp.Transparency = HitboxTransparency
-            hrp.BrickColor = BrickColor.new("Dark red")
-            hrp.Material = Enum.Material.Neon
-            hrp.CanCollide = false
-        end
+    -- R6 characters use 'Head', 'Torso', etc.
+    -- R15 characters use 'Head', 'HumanoidRootPart', 'UpperTorso', etc.
 
-        if head then
-            head.Size = Vector3.new(HitboxSize, HitboxSize, HitboxSize)
-            head.Transparency = HitboxTransparency
-            head.BrickColor = BrickColor.new("Bright red")
-            head.Material = Enum.Material.Neon
-            head.CanCollide = false
-            head.Massless = true
-        end
+    -- Find the HumanoidRootPart (common for both R6 and R15)
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+
+    -- If HumanoidRootPart exists, modify it
+    if hrp then
+        hrp.Size = Vector3.new(HitboxSize, HitboxSize, HitboxSize)
+        hrp.Transparency = HitboxTransparency
+        hrp.BrickColor = BrickColor.new("Dark red")
+        hrp.Material = Enum.Material.Neon
+        hrp.CanCollide = false
+    end
+
+    -- Find the Head
+    local head = character:FindFirstChild("Head")
+
+    -- If Head exists, modify it
+    if head then
+        head.Size = Vector3.new(HitboxSize, HitboxSize, HitboxSize)
+        head.Transparency = HitboxTransparency
+        head.BrickColor = BrickColor.new("Bright red")
+        head.Material = Enum.Material.Neon
+        head.CanCollide = false
+        head.Massless = true
     end
 end
 
 -- Function to reset hitboxes
 local function resetHitboxes(character)
-    if character then
-        local head = character:FindFirstChild("Head")
-        local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not character then return end
 
-        if hrp then
-            hrp.Size = Vector3.new(2, 2, 1)
-            hrp.Transparency = 1
-            hrp.BrickColor = BrickColor.new("Medium stone grey")
-            hrp.Material = Enum.Material.Plastic
-            hrp.CanCollide = true
-        end
+    -- Reset HumanoidRootPart (common for both R6 and R15)
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        hrp.Size = Vector3.new(2, 2, 1)
+        hrp.Transparency = 1
+        hrp.BrickColor = BrickColor.new("Medium stone grey")
+        hrp.Material = Enum.Material.Plastic
+        hrp.CanCollide = true
+    end
 
-        if head then
-            head.Size = Vector3.new(2, 1, 1)
-            head.Transparency = 1
-            head.BrickColor = BrickColor.new("Medium stone grey")
-            head.Material = Enum.Material.Plastic
-            head.CanCollide = true
-            head.Massless = false
-        end
+    -- Reset Head
+    local head = character:FindFirstChild("Head")
+    if head then
+        head.Size = Vector3.new(2, 1, 1)
+        head.Transparency = 1
+        head.BrickColor = BrickColor.new("Medium stone grey")
+        head.Material = Enum.Material.Plastic
+        head.CanCollide = true
+        head.Massless = false
     end
 end
 
 -- Function to make corpses fall through the ground
 local function shrinkHitbox(character)
-    if character then
-        for _, part in ipairs(character:GetChildren()) do
-            if part:IsA("BasePart") then
-                part.Size = Vector3.new(1, 1, 1)  -- Shrink parts
-                part.Transparency = 0.8  -- Make it more transparent
-                part.BrickColor = BrickColor.new("Dark grey")
-                part.Material = Enum.Material.SmoothPlastic
-                part.CanCollide = false -- Make sure it falls through the ground
-                part.Anchored = false -- Ensure it's not stuck
-                part.Velocity = Vector3.new(0, -50, 0) -- Force it downward
-            end
+    if not character then return end
+
+    for _, part in ipairs(character:GetDescendants()) do -- Use GetDescendants() to get all parts
+        if part:IsA("BasePart") then
+            part.Size = Vector3.new(1, 1, 1)  -- Shrink parts
+            part.Transparency = 0.8  -- Make it more transparent
+            part.BrickColor = BrickColor.new("Dark grey")
+            part.Material = Enum.Material.SmoothPlastic
+            part.CanCollide = false -- Make sure it falls through the ground
+            part.Anchored = false -- Ensure it's not stuck
+            part.Velocity = Vector3.new(0, -50, 0) -- Force it downward
         end
     end
 end
@@ -179,14 +188,18 @@ local function createESP(player)
     end
 
     if not player.Character then return end
-    local head = player.Character:FindFirstChild("Head")
-    if not head then return end
 
     -- Only apply ESP to enemies
     if isEnemy(player) then
+        local head = player.Character:FindFirstChild("Head")
+        local hrp = player.Character:FindFirstChild("HumanoidRootPart")
+
+        local adorneePart = head or hrp  -- Use head if available, otherwise use HumanoidRootPart
+        if not adorneePart then return end
+
         local billboard = Instance.new("BillboardGui")
         billboard.Name = "ESP"
-        billboard.Adornee = head
+        billboard.Adornee = adorneePart
         billboard.Size = UDim2.new(0, 100, 0, 50) -- Default size
         billboard.StudsOffset = Vector3.new(0, 2, 0)
         billboard.AlwaysOnTop = true
@@ -201,7 +214,7 @@ local function createESP(player)
         textLabel.Font = Enum.Font.SourceSansBold
 
         ESPTexts[player] = billboard
-        billboard.Parent = head
+        billboard.Parent = adorneePart
 
         -- Update ESP size based on distance (Optimized)
         local function updateESPSize()
