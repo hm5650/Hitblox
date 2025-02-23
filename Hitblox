@@ -106,7 +106,7 @@ playSound("rbxassetid://5607311932")
 
 -- Load UI library
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/Arceus-X-UI-Library/main/source.lua"))()
-lib:SetTitle("Hitblox")
+lib:SetTitle("Hitblox (v3.1)")
 lib:SetIcon("http://www.roblox.com/asset/?id=9178187770")
 lib:SetTheme("HighContrast")
 -- Play another sound
