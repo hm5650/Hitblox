@@ -93,7 +93,7 @@ task.wait(2)
 f("rbxassetid://5607311932")
 
 local s = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/Arceus-X-UI-Library/main/source.lua"))()
-s:SetTitle("Hitblox (v3.3)")
+s:SetTitle("Hitblox (v3.4)")
 s:SetIcon("http://www.roblox.com/asset/?id=9178187770")
 s:SetTheme("HighContrast")
 f("rbxassetid://195868961")
@@ -416,9 +416,128 @@ s:AddToggle("Fpp Toggle", function(M)
     end
 end, false)
 
-s:AddButton("Aimlock", function()
+s:AddButton("AimAssist", function()
     f("rbxassetid://6228337171")
-    loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-Aimbot-Universal-For-Mobile-and-PC-29153"))()
+    local player = game.Players.LocalPlayer
+local userInputService = game:GetService("UserInputService")
+local runService = game:GetService("RunService")
+
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player:WaitForChild("PlayerGui")
+screenGui.ResetOnSpawn = false -- Prevents UI from resetting when respawning
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 99, 0, 44)
+frame.Position = UDim2.new(0, 115, 0, 49)
+frame.AnchorPoint = Vector2.new(0.5, 1) -- Anchors the frame to the bottom center
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+frame.BackgroundTransparency = 0.2
+frame.Active = true -- Necessary for Input events to work
+frame.Parent = screenGui
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0.8, 0)
+uiCorner.Parent = frame
+
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(1, 0, 1, 0)
+toggleButton.Text = "Aim Assist"
+toggleButton.BackgroundTransparency = 1
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.TextSize = 10 -- Set the text size to 16
+toggleButton.Parent = frame
+
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Thickness = 2
+uiStroke.Color = Color3.fromRGB(255, 255, 0)
+uiStroke.Enabled = false
+uiStroke.Parent = frame
+
+local aimAssistEnabled = false
+toggleButton.MouseButton1Click:Connect(function()
+    aimAssistEnabled = not aimAssistEnabled
+    uiStroke.Enabled = aimAssistEnabled
+end)
+
+local function isEnemy(otherPlayer)
+    -- Check if the game is team-based
+    if game:GetService("Teams") and #game:GetService("Teams"):GetTeams() > 1 then
+        
+        local playerTeam = player.Team
+        local otherPlayerTeam = otherPlayer.Team
+        return playerTeam ~= nil and otherPlayerTeam ~= nil and playerTeam ~= otherPlayerTeam
+    else
+        
+        return otherPlayer ~= player
+    end
+end
+
+local function findNearestPlayer()
+    local nearestPlayer = nil
+    local shortestDistance = math.huge
+    local localCharacter = player.Character
+    if not localCharacter then return nil end
+    local localRoot = localCharacter:FindFirstChild("HumanoidRootPart")
+    if not localRoot then return nil end
+
+    for _, otherPlayer in pairs(game.Players:GetPlayers()) do
+        if isEnemy(otherPlayer) and otherPlayer.Character then
+            local character = otherPlayer.Character
+            local rootPart = character:FindFirstChild("HumanoidRootPart")
+            if rootPart then
+                local distance = (localRoot.Position - rootPart.Position).Magnitude
+                if distance < shortestDistance then
+                    shortestDistance = distance
+                    nearestPlayer = otherPlayer
+                end
+            end
+        end
+    end
+    return nearestPlayer
+end
+
+runService.RenderStepped:Connect(function()
+    if aimAssistEnabled then
+        local nearestPlayer = findNearestPlayer()
+        if nearestPlayer and nearestPlayer.Character then
+            local targetRoot = nearestPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if targetRoot then
+                -- Adjust the player's aim (this is game-specific and may require additional logic)
+                local camera = workspace.CurrentCamera
+                if camera then
+                    camera.CFrame = CFrame.lookAt(camera.CFrame.Position, targetRoot.Position)
+                end
+            end
+        end
+    end
+end)
+
+local dragging = false
+local dragStart = Vector2.new(0, 0)
+local startPos = UDim2.new(0, 0, 0, 0)
+
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+    end
+end)
+
+frame.InputChanged:Connect(function(input)
+    if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and dragging then
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+userInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
 end)
 
 s:AddButton("BlatantCC", function()
