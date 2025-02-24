@@ -93,7 +93,7 @@ task.wait(2)
 f("rbxassetid://5607311932")
 
 local s = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/Arceus-X-UI-Library/main/source.lua"))()
-s:SetTitle("Hitblox (v3.2)")
+s:SetTitle("Hitblox (v3.3)")
 s:SetIcon("http://www.roblox.com/asset/?id=9178187770")
 s:SetTheme("HighContrast")
 f("rbxassetid://195868961")
@@ -392,6 +392,28 @@ end, false)
 
 s:AddToggle("ESP", function(M)
     X(M)
+end, false)
+
+s:AddToggle("Fpp Toggle", function(M)
+    if M then
+        f("rbxassetid://195868961") 
+        
+        
+        local camera = game.Workspace.CurrentCamera
+        camera.CameraType = Enum.CameraType.Custom  -- Ensure normal camera movement
+        e.CameraMode = Enum.CameraMode.LockFirstPerson
+
+        -- Prevent forced locking to scriptable camera
+        if getgenv().cameraLockConnection then
+            getgenv().cameraLockConnection:Disconnect()
+            getgenv().cameraLockConnection = nil
+        end
+    else
+        f("rbxassetid://195868961") 
+        
+        
+        e.CameraMode = Enum.CameraMode.Classic
+    end
 end, false)
 
 s:AddButton("Aimlock", function()
