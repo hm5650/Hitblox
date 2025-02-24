@@ -93,7 +93,7 @@ task.wait(2)
 f("rbxassetid://5607311932")
 
 local s = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/Arceus-X-UI-Library/main/source.lua"))()
-s:SetTitle("Hitblox (v3.4)")
+s:SetTitle("Hitblox (v3.5)")
 s:SetIcon("http://www.roblox.com/asset/?id=9178187770")
 s:SetTheme("HighContrast")
 f("rbxassetid://195868961")
@@ -422,7 +422,7 @@ s:AddButton("AimAssist", function()
 local userInputService = game:GetService("UserInputService")
 local runService = game:GetService("RunService")
 
-
+-- UI Elements
 local screenGui = Instance.new("ScreenGui")
 screenGui.Parent = player:WaitForChild("PlayerGui")
 screenGui.ResetOnSpawn = false -- Prevents UI from resetting when respawning
@@ -454,23 +454,46 @@ uiStroke.Color = Color3.fromRGB(255, 255, 0)
 uiStroke.Enabled = false
 uiStroke.Parent = frame
 
+-- Toggle Logic
 local aimAssistEnabled = false
 toggleButton.MouseButton1Click:Connect(function()
     aimAssistEnabled = not aimAssistEnabled
     uiStroke.Enabled = aimAssistEnabled
 end)
 
+-- Aim Assist Logic
 local function isEnemy(otherPlayer)
     -- Check if the game is team-based
     if game:GetService("Teams") and #game:GetService("Teams"):GetTeams() > 1 then
-        
+        -- Team-based game: target players on the opposite team
         local playerTeam = player.Team
         local otherPlayerTeam = otherPlayer.Team
         return playerTeam ~= nil and otherPlayerTeam ~= nil and playerTeam ~= otherPlayerTeam
     else
-        
+        -- Non-team game: target all other players
         return otherPlayer ~= player
     end
+end
+
+local function isVisible(targetPosition, targetCharacter)
+    local localCharacter = player.Character
+    if not localCharacter then return false end
+    local localRoot = localCharacter:FindFirstChild("HumanoidRootPart")
+    if not localRoot then return false end
+
+    -- Raycast from the local player to the target position
+    local ray = Ray.new(localRoot.Position, (targetPosition - localRoot.Position).Unit * 1000)
+    local hit, position = workspace:FindPartOnRay(ray, localCharacter)
+
+    -- If the ray hits something, check if it's the target
+    if hit then
+        if hit:IsDescendantOf(targetCharacter) then
+            return true -- No wall in between
+        else
+            return false -- Wall detected
+        end
+    end
+    return false
 end
 
 local function findNearestPlayer()
@@ -487,7 +510,7 @@ local function findNearestPlayer()
             local rootPart = character:FindFirstChild("HumanoidRootPart")
             if rootPart then
                 local distance = (localRoot.Position - rootPart.Position).Magnitude
-                if distance < shortestDistance then
+                if distance < shortestDistance and isVisible(rootPart.Position, character) then
                     shortestDistance = distance
                     nearestPlayer = otherPlayer
                 end
@@ -506,13 +529,18 @@ runService.RenderStepped:Connect(function()
                 -- Adjust the player's aim (this is game-specific and may require additional logic)
                 local camera = workspace.CurrentCamera
                 if camera then
-                    camera.CFrame = CFrame.lookAt(camera.CFrame.Position, targetRoot.Position)
+                    -- Smoothly adjust the camera to look at the target
+                    local targetPosition = targetRoot.Position
+                    local cameraPosition = camera.CFrame.Position
+                    local newCFrame = CFrame.new(cameraPosition, targetPosition)
+                    camera.CFrame = camera.CFrame:Lerp(newCFrame, 0.3) -- Smooth transition
                 end
             end
         end
     end
 end)
 
+-- Dragging System
 local dragging = false
 local dragStart = Vector2.new(0, 0)
 local startPos = UDim2.new(0, 0, 0, 0)
@@ -537,7 +565,6 @@ userInputService.InputEnded:Connect(function(input)
         dragging = false
     end
 end)
-
 end)
 
 s:AddButton("BlatantCC", function()
